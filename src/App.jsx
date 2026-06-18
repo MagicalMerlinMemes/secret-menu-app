@@ -151,16 +151,22 @@ function buildScript({ patty, cheese, bun, cook, toppings, friesStyle, friesTop,
 
 // ─── UI COMPONENTS ───────────────────────────────────────────────────────────
 const RadioGrid = ({ options, value, onChange, cols = 2 }) => (
-  <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "6px" }}>
+  <div role="radiogroup" style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "6px" }}>
     {options.map(o => (
-      <button key={o.id} onClick={() => onChange(o.id)} style={{
-        padding: "10px 8px", borderRadius: "8px", lineHeight: "1.3",
-        border: value === o.id ? `2px solid ${RED}` : `2px solid ${LIGHT_GRAY}`,
-        background: value === o.id ? "#FFF0F0" : WHITE,
-        color: value === o.id ? RED : DARK,
-        fontWeight: value === o.id ? "700" : "400",
-        fontSize: "13px", cursor: "pointer", textAlign: "center",
-      }}>{o.label}</button>
+      <button
+        key={o.id}
+        onClick={() => onChange(o.id)}
+        role="radio"
+        aria-checked={value === o.id}
+        aria-label={o.label}
+        style={{
+          padding: "10px 8px", borderRadius: "8px", lineHeight: "1.3",
+          border: value === o.id ? `2px solid ${RED}` : `2px solid ${LIGHT_GRAY}`,
+          background: value === o.id ? "#FFF0F0" : WHITE,
+          color: value === o.id ? RED : DARK,
+          fontWeight: value === o.id ? "700" : "400",
+          fontSize: "13px", cursor: "pointer", textAlign: "center",
+        }}>{o.label}</button>
     ))}
   </div>
 );
@@ -170,15 +176,21 @@ const CheckGrid = ({ options, values, onToggle }) => (
     {options.map(t => {
       const checked = values[t.id];
       return (
-        <button key={t.id} onClick={() => onToggle(t.id)} style={{
-          padding: "10px", borderRadius: "8px", display: "flex", alignItems: "center", gap: "8px",
-          border: checked ? `2px solid ${RED}` : `2px solid ${LIGHT_GRAY}`,
-          background: checked ? "#FFF0F0" : WHITE,
-          color: checked ? RED : DARK,
-          fontWeight: checked ? "700" : "400",
-          fontSize: "13px", cursor: "pointer", textAlign: "left",
-        }}>
-          <span style={{ width: "16px", height: "16px", borderRadius: "4px", flexShrink: 0, background: checked ? RED : LIGHT_GRAY, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <button
+          key={t.id}
+          onClick={() => onToggle(t.id)}
+          role="checkbox"
+          aria-checked={checked}
+          aria-label={t.label}
+          style={{
+            padding: "10px", borderRadius: "8px", display: "flex", alignItems: "center", gap: "8px",
+            border: checked ? `2px solid ${RED}` : `2px solid ${LIGHT_GRAY}`,
+            background: checked ? "#FFF0F0" : WHITE,
+            color: checked ? RED : DARK,
+            fontWeight: checked ? "700" : "400",
+            fontSize: "13px", cursor: "pointer", textAlign: "left",
+          }}>
+          <span aria-hidden="true" style={{ width: "16px", height: "16px", borderRadius: "4px", flexShrink: 0, background: checked ? RED : LIGHT_GRAY, display: "flex", alignItems: "center", justifyContent: "center" }}>
             {checked && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
           </span>
           {t.label}
