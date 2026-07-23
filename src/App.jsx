@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { Analytics } from "@vercel/analytics/react";
 
 const RED = "#DA2127";
 const CREAM = "#FFF8F0";
@@ -273,6 +274,7 @@ export default function App() {
 
   return (
     <div style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", background: CREAM, minHeight: "100vh", color: DARK }}>
+      <Analytics />
       {/* Header */}
       <div style={{ background: RED, padding: "20px 16px 16px", textAlign: "center" }}>
         <h1 style={{ fontSize: "22px", fontWeight: "900", color: WHITE, margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>Secret Menu Builder</h1>
