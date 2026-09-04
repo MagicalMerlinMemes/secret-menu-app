@@ -67,24 +67,46 @@ const FRIES_TOPPINGS = [
   { id: "lemon_pepper_fries", label: "+ Lemon Pepper", order: "with lemon pepper" },
   { id: "chilies_fries", label: "+ Chopped Chilies", order: "with chopped chilies" },
 ];
+
+// CHANGE 4: Soda / Lemonade / Tea label
 const DRINK_TYPE = [
-  { id: "soda", label: "Soda" },
+  { id: "soda", label: "Soda / Lemonade / Tea" },
   { id: "shake", label: "Milkshake" },
   { id: "float", label: "Float ★", secret: true },
   { id: "secret_mix", label: "Secret Mix ★", secret: true },
   { id: "no_drink", label: "No Drink" },
 ];
+
+// CHANGE 3: Arnold Palmer and Lemon-Up added to sodas
 const SODAS = [
-  { id: "coke", label: "Coca-Cola" }, { id: "diet_coke", label: "Diet Coke" },
-  { id: "dr_pepper", label: "Dr Pepper" }, { id: "7up", label: "7-Up" },
-  { id: "root_beer", label: "Root Beer" }, { id: "pink_lemonade", label: "Pink Lemonade" },
-  { id: "iced_tea", label: "Iced Tea" }, { id: "water", label: "Water" },
+  { id: "coke", label: "Coca-Cola" },
+  { id: "diet_coke", label: "Diet Coke" },
+  { id: "dr_pepper", label: "Dr Pepper" },
+  { id: "7up", label: "7-Up" },
+  { id: "root_beer", label: "Root Beer" },
+  { id: "pink_lemonade", label: "Pink Lemonade" },
+  { id: "iced_tea", label: "Iced Tea" },
+  { id: "water", label: "Water" },
+  { id: "arnold_palmer_soda", label: "Arnold Palmer ★", secret: true, order: "Arnold Palmer — half iced tea, half pink lemonade" },
+  { id: "lemon_up_soda", label: "Lemon-Up ★", secret: true, order: "Lemon-Up — half 7-Up, half pink lemonade" },
 ];
+
+// CHANGE 2: Secret shake flavors added to milkshake section
 const SHAKE_FLAVORS = [
-  { id: "vanilla", label: "Vanilla" }, { id: "chocolate", label: "Chocolate" }, { id: "strawberry", label: "Strawberry" },
+  { id: "vanilla", label: "Vanilla" },
+  { id: "chocolate", label: "Chocolate" },
+  { id: "strawberry", label: "Strawberry" },
+  { id: "neapolitan", label: "Neapolitan ★", secret: true, order: "Neapolitan Shake — all three flavors blended" },
+  { id: "black_white", label: "Black & White ★", secret: true, order: "Black & White Shake — chocolate and vanilla" },
+  { id: "choc_straw", label: "Choc-Strawberry ★", secret: true, order: "Chocolate-Strawberry Shake" },
+  { id: "van_straw", label: "Vanilla-Strawberry ★", secret: true, order: "Vanilla-Strawberry Shake" },
+  { id: "around_world", label: "Around the World ★", secret: true, order: "Around the World — all three flavors layered" },
 ];
+
 const SHAKE_SIZE = [
-  { id: "regular", label: "Regular" }, { id: "large", label: "Large ★", secret: true }, { id: "xlarge", label: "X-Large ★", secret: true },
+  { id: "regular", label: "Regular" },
+  { id: "large", label: "Large ★", secret: true },
+  { id: "xlarge", label: "X-Large ★", secret: true },
 ];
 const FLOAT_OPTIONS = [
   { id: "root_beer_float", label: "Root Beer Float", order: "Root Beer Float — half root beer, half vanilla shake" },
@@ -105,7 +127,7 @@ const SECRET_MIXES = [
 
 const TOTAL_BURGER = 4 * 5 * 7 * 5 * Math.pow(2, 10);
 const TOTAL_FRIES = 4 * 8;
-const TOTAL_DRINKS = 8 + 9 + 5 + 7 + 1;
+const TOTAL_DRINKS = 10 + 8 + 5 + 7 + 1;
 const TOTAL = TOTAL_BURGER * TOTAL_FRIES * TOTAL_DRINKS;
 const defaultToppings = TOPPINGS.reduce((a, t) => { a[t.id] = t.default; return a; }, {});
 
@@ -129,12 +151,23 @@ function buildScript({ patty, cheese, bun, cook, toppings, friesStyle, friesTop,
   });
   let friesStr = fd.order + (ft.order ? ` — ${ft.order}` : "");
   let drinkStr = "";
-  if (drinkType === "soda") drinkStr = SODAS.find(x => x.id === soda)?.label;
-  else if (drinkType === "shake") {
-    const sz = SHAKE_SIZE.find(x => x.id === shakeSize);
-    drinkStr = `${sz.id !== "regular" ? sz.label.replace(" ★","") + " " : ""}${SHAKE_FLAVORS.find(x => x.id === shakeBase)?.label} milkshake`;
-  } else if (drinkType === "float") drinkStr = FLOAT_OPTIONS.find(x => x.id === floatChoice)?.order;
-  else if (drinkType === "secret_mix") drinkStr = SECRET_MIXES.find(x => x.id === secretMix)?.order;
+  if (drinkType === "soda") {
+    const s = SODAS.find(x => x.id === soda);
+    drinkStr = s?.order || s?.label || "";
+  } else if (drinkType === "shake") {
+    const sf = SHAKE_FLAVORS.find(x => x.id === shakeBase);
+    if (sf?.order) {
+      const sz = SHAKE_SIZE.find(x => x.id === shakeSize);
+      drinkStr = sz?.id !== "regular" ? `${sz?.label.replace(" ★","")} ${sf.order}` : sf.order;
+    } else {
+      const sz = SHAKE_SIZE.find(x => x.id === shakeSize);
+      drinkStr = `${sz?.id !== "regular" ? sz?.label.replace(" ★","") + " " : ""}${sf?.label} milkshake`;
+    }
+  } else if (drinkType === "float") {
+    drinkStr = FLOAT_OPTIONS.find(x => x.id === floatChoice)?.order;
+  } else if (drinkType === "secret_mix") {
+    drinkStr = SECRET_MIXES.find(x => x.id === secretMix)?.order;
+  }
   const burgerLine = parts.join(", ");
   const lines = drinkStr && drinkType !== "no_drink"
     ? [`"Can I get ${burgerLine},`, `${friesStr},`, `and a ${drinkStr}?"`]
@@ -146,7 +179,10 @@ function buildScript({ patty, cheese, bun, cook, toppings, friesStyle, friesTop,
   if (cook === "medium_rare") tips.push("Medium rare is possible but some locations decline — ask politely.");
   if (friesTop === "roadkill_fries") tips.push("Roadkill = Animal Style fries with a Flying Dutchman crumbled on top.");
   if (drinkType === "float") tips.push("Ask for a half cup of soda first so it doesn't overflow.");
+  if (drinkType === "soda" && soda === "arnold_palmer_soda") tips.push("Arnold Palmer = half iced tea, half pink lemonade. Most locations know it.");
+  if (drinkType === "soda" && soda === "lemon_up_soda") tips.push("Lemon-Up = half 7-Up, half pink lemonade. Say it by name or describe it.");
   if (drinkType === "shake" && shakeSize !== "regular") tips.push("Large and X-Large shakes are off-menu — just ask by size name.");
+  if (drinkType === "shake" && SHAKE_FLAVORS.find(x => x.id === shakeBase)?.secret) tips.push("This is a secret shake combo — describe it if they don't recognize the name.");
   return { lines, tips };
 }
 
@@ -154,20 +190,10 @@ function buildScript({ patty, cheese, bun, cook, toppings, friesStyle, friesTop,
 const RadioGrid = ({ options, value, onChange, cols = 2 }) => (
   <div role="radiogroup" style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "6px" }}>
     {options.map(o => (
-      <button
-        key={o.id}
-        onClick={() => onChange(o.id)}
-        role="radio"
-        aria-checked={value === o.id}
-        aria-label={o.label}
-        style={{
-          padding: "10px 8px", borderRadius: "8px", lineHeight: "1.3",
-          border: value === o.id ? `2px solid ${RED}` : `2px solid ${LIGHT_GRAY}`,
-          background: value === o.id ? "#FFF0F0" : WHITE,
-          color: value === o.id ? RED : DARK,
-          fontWeight: value === o.id ? "700" : "400",
-          fontSize: "13px", cursor: "pointer", textAlign: "center",
-        }}>{o.label}</button>
+      <button key={o.id} onClick={() => onChange(o.id)} role="radio" aria-checked={value === o.id} aria-label={o.label}
+        style={{ padding: "10px 8px", borderRadius: "8px", lineHeight: "1.3", border: value === o.id ? `2px solid ${RED}` : `2px solid ${LIGHT_GRAY}`, background: value === o.id ? "#FFF0F0" : WHITE, color: value === o.id ? RED : DARK, fontWeight: value === o.id ? "700" : "400", fontSize: "13px", cursor: "pointer", textAlign: "center" }}>
+        {o.label}
+      </button>
     ))}
   </div>
 );
@@ -177,20 +203,8 @@ const CheckGrid = ({ options, values, onToggle }) => (
     {options.map(t => {
       const checked = values[t.id];
       return (
-        <button
-          key={t.id}
-          onClick={() => onToggle(t.id)}
-          role="checkbox"
-          aria-checked={checked}
-          aria-label={t.label}
-          style={{
-            padding: "10px", borderRadius: "8px", display: "flex", alignItems: "center", gap: "8px",
-            border: checked ? `2px solid ${RED}` : `2px solid ${LIGHT_GRAY}`,
-            background: checked ? "#FFF0F0" : WHITE,
-            color: checked ? RED : DARK,
-            fontWeight: checked ? "700" : "400",
-            fontSize: "13px", cursor: "pointer", textAlign: "left",
-          }}>
+        <button key={t.id} onClick={() => onToggle(t.id)} role="checkbox" aria-checked={checked} aria-label={t.label}
+          style={{ padding: "10px", borderRadius: "8px", display: "flex", alignItems: "center", gap: "8px", border: checked ? `2px solid ${RED}` : `2px solid ${LIGHT_GRAY}`, background: checked ? "#FFF0F0" : WHITE, color: checked ? RED : DARK, fontWeight: checked ? "700" : "400", fontSize: "13px", cursor: "pointer", textAlign: "left" }}>
           <span aria-hidden="true" style={{ width: "16px", height: "16px", borderRadius: "4px", flexShrink: 0, background: checked ? RED : LIGHT_GRAY, display: "flex", alignItems: "center", justifyContent: "center" }}>
             {checked && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
           </span>
@@ -272,6 +286,8 @@ export default function App() {
   const toggleTop = id => setToppings(p => ({ ...p, [id]: !p[id] }));
   const reset = () => { setPatty("2x2"); setCheese("2_cheese"); setBun("regular_bun"); setCook("regular_cook"); setToppings(defaultToppings); setFriesStyle("regular_fries"); setFriesTop("no_fries_topping"); setDrinkType("shake"); setSoda("coke"); setShakeBase("vanilla"); setShakeSize("regular"); setFloatChoice("root_beer_float"); setSecretMix("neapolitan"); };
 
+  const orderProps = { patty, cheese, bun, cook, toppings, friesStyle, friesTop, drinkType, soda, shakeBase, shakeSize, floatChoice, secretMix };
+
   return (
     <div style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", background: CREAM, minHeight: "100vh", color: DARK }}>
       <Analytics />
@@ -291,8 +307,14 @@ export default function App() {
         ))}
       </div>
 
+      {/* CHANGE 1: Your Order panel at top */}
+      <div style={{ padding: "16px 16px 0", maxWidth: "480px", margin: "0 auto" }}>
+        <Section emoji="🗣️" title="Your Order" />
+        <OrderPanel {...orderProps} />
+      </div>
+
       {/* Legend */}
-      <div style={{ background: "#FFF8E8", borderBottom: `1px solid ${YELLOW}`, padding: "8px 16px", fontSize: "11px", color: "#8B6914", display: "flex", gap: "6px", alignItems: "center" }}>
+      <div style={{ background: "#FFF8E8", borderTop: `1px solid ${YELLOW}`, borderBottom: `1px solid ${YELLOW}`, padding: "8px 16px", fontSize: "11px", color: "#8B6914", display: "flex", gap: "6px", alignItems: "center", marginTop: "16px" }}>
         <span style={{ color: YELLOW }}>★</span> = Secret menu — not on the board, but totally orderable
       </div>
 
@@ -319,24 +341,39 @@ export default function App() {
 
         <Section emoji="🥤" title="Your Drink" />
         <Card label="Type"><RadioGrid options={DRINK_TYPE} value={drinkType} onChange={setDrinkType} cols={3} /></Card>
-        {drinkType === "soda" && <Card label="Soda"><RadioGrid options={SODAS} value={soda} onChange={setSoda} /></Card>}
-        {drinkType === "shake" && <>
-          <Card label="Flavor"><RadioGrid options={SHAKE_FLAVORS} value={shakeBase} onChange={setShakeBase} cols={3} /></Card>
-          <Card label="Size"><RadioGrid options={SHAKE_SIZE} value={shakeSize} onChange={setShakeSize} cols={3} /></Card>
-        </>}
-        {drinkType === "float" && <Card label="Float">
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            {FLOAT_OPTIONS.map(o => <button key={o.id} onClick={() => setFloatChoice(o.id)} style={{ padding: "11px 14px", borderRadius: "8px", textAlign: "left", border: floatChoice === o.id ? `2px solid ${RED}` : `2px solid ${LIGHT_GRAY}`, background: floatChoice === o.id ? "#FFF0F0" : WHITE, color: floatChoice === o.id ? RED : DARK, fontWeight: floatChoice === o.id ? "700" : "400", fontSize: "13px", cursor: "pointer" }}>{o.label}</button>)}
-          </div>
-        </Card>}
-        {drinkType === "secret_mix" && <Card label="Secret Mix">
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            {SECRET_MIXES.map(o => <button key={o.id} onClick={() => setSecretMix(o.id)} style={{ padding: "11px 14px", borderRadius: "8px", textAlign: "left", border: secretMix === o.id ? `2px solid ${RED}` : `2px solid ${LIGHT_GRAY}`, background: secretMix === o.id ? "#FFF0F0" : WHITE, color: secretMix === o.id ? RED : DARK, fontWeight: secretMix === o.id ? "700" : "400", fontSize: "13px", cursor: "pointer" }}>{o.label}</button>)}
-          </div>
-        </Card>}
 
-        <Section emoji="🗣️" title="Your Order" />
-        <OrderPanel patty={patty} cheese={cheese} bun={bun} cook={cook} toppings={toppings} friesStyle={friesStyle} friesTop={friesTop} drinkType={drinkType} soda={soda} shakeBase={shakeBase} shakeSize={shakeSize} floatChoice={floatChoice} secretMix={secretMix} />
+        {drinkType === "soda" && (
+          <Card label="Choose Your Drink">
+            <RadioGrid options={SODAS} value={soda} onChange={setSoda} />
+          </Card>
+        )}
+
+        {drinkType === "shake" && (
+          <>
+            <Card label="Shake Flavor">
+              <RadioGrid options={SHAKE_FLAVORS} value={shakeBase} onChange={setShakeBase} cols={2} />
+            </Card>
+            <Card label="Size">
+              <RadioGrid options={SHAKE_SIZE} value={shakeSize} onChange={setShakeSize} cols={3} />
+            </Card>
+          </>
+        )}
+
+        {drinkType === "float" && (
+          <Card label="Float">
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              {FLOAT_OPTIONS.map(o => <button key={o.id} onClick={() => setFloatChoice(o.id)} style={{ padding: "11px 14px", borderRadius: "8px", textAlign: "left", border: floatChoice === o.id ? `2px solid ${RED}` : `2px solid ${LIGHT_GRAY}`, background: floatChoice === o.id ? "#FFF0F0" : WHITE, color: floatChoice === o.id ? RED : DARK, fontWeight: floatChoice === o.id ? "700" : "400", fontSize: "13px", cursor: "pointer" }}>{o.label}</button>)}
+            </div>
+          </Card>
+        )}
+
+        {drinkType === "secret_mix" && (
+          <Card label="Secret Mix">
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              {SECRET_MIXES.map(o => <button key={o.id} onClick={() => setSecretMix(o.id)} style={{ padding: "11px 14px", borderRadius: "8px", textAlign: "left", border: secretMix === o.id ? `2px solid ${RED}` : `2px solid ${LIGHT_GRAY}`, background: secretMix === o.id ? "#FFF0F0" : WHITE, color: secretMix === o.id ? RED : DARK, fontWeight: secretMix === o.id ? "700" : "400", fontSize: "13px", cursor: "pointer" }}>{o.label}</button>)}
+            </div>
+          </Card>
+        )}
 
         <button onClick={reset} style={{ width: "100%", marginTop: "14px", padding: "14px", borderRadius: "10px", background: RED, color: WHITE, fontWeight: "900", fontSize: "15px", letterSpacing: "1px", textTransform: "uppercase", border: "none", cursor: "pointer" }}>
           Reset & Start Over
